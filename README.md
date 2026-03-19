@@ -61,14 +61,16 @@ Displays results and exits.
 
 For each tracked pilot:
 
-- **Status**: flying / landed
-- **GPS position** (lat, lon) with Google Maps link and XContest Live link
-- **Altitude** (GPS + AGL)
+- **Height AGL** (above ground level, prominent) with GPS altitude and ground elevation
+- **Climb/1m** — altitude gained or lost over ~1 min (native XContest data)
+- **Vario** — vertical speed in m/s (calculated between the last two fixes)
+- **AGL sparkline** — altitude graph that builds up over the tracking session
 - **Distance** flown (km)
 - **Average speed** (km/h)
 - **Wind** (direction + speed)
 - **Glider**, takeoff site, country
-- **Last fix** timestamp
+- **Status**: flying / landed
+- **Google Maps link** for exact position
 
 ## How it works
 
