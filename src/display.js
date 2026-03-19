@@ -70,7 +70,7 @@ export function formatPilot(p, { lowAlt = 150 } = {}) {
 
   const aglHist = p.aglHistory || [];
   const aglGraph = aglHist.length >= 2
-    ? `  AGL        ${sparkline(aglHist)}`
+    ? `  AGL graph  ${sparkline(aglHist)}`
     : '';
 
   const lines = [
