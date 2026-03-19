@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Suivi en temps réel de pilotes de parapente via XContest Live",
   "type": "module",
+  "bin": {
+    "xct": "src/index.js"
+  },
   "scripts": {
     "track": "node src/index.js",
     "list": "node src/index.js --list",

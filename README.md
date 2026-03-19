@@ -7,9 +7,10 @@ Se connecte au WebSocket de XContest, récupère la position de tous les pilotes
 ## Installation
 
 ```bash
-git clone https://github.com/ton-user/xcontest-tracker.git
+git clone https://github.com/noeclement/xcontest-tracker.git
 cd xcontest-tracker
 npm install
+npm link
 ```
 
 > Requiert **Node.js 18+** (utilise `node:crypto` natif).
@@ -19,25 +20,25 @@ npm install
 ### Suivre un pilote
 
 ```bash
-node src/index.js "Elie Teyssedou"
+xct "ElieTSD"
 ```
 
-Recherche par nom ou par pseudo XContest :
+Par nom complet :
 
 ```bash
-node src/index.js "ElieTSD"
+xct "Elie Teyssedou"
 ```
 
 Changer l'intervalle de refresh (par défaut 30s) :
 
 ```bash
-node src/index.js "Elie Teyssedou" --interval 10
+xct "ElieTSD" --interval 10
 ```
 
 ### Lister les pilotes en vol
 
 ```bash
-node src/index.js --list
+xct --list
 ```
 
 Affiche un tableau trié par distance parcourue, actualisé toutes les 30s.
@@ -45,7 +46,7 @@ Affiche un tableau trié par distance parcourue, actualisé toutes les 30s.
 ### Rechercher un pilote
 
 ```bash
-node src/index.js --search "Bottegal"
+xct --search "Bottegal"
 ```
 
 Affiche les résultats et quitte.
