@@ -71,7 +71,7 @@ export function formatPilot(p, { lowAlt = 150 } = {}) {
   const aglHist = p.aglHistory || [];
   const aglGraph = aglHist.length >= 2
     ? `  AGL graph  ${sparkline(aglHist)}`
-    : '';
+    : null;
 
   const lines = [
     c('dim', '  ─────────────────────────────────────────────'),
@@ -91,11 +91,11 @@ export function formatPilot(p, { lowAlt = 150 } = {}) {
     `  Last fix   ${c('dim', p.time ?? '?')}`,
     aglGraph,
     '',
-    p.lat != null ? c('dim', `  https://www.google.com/maps?q=${p.lat},${p.lon}`) : '',
+    p.lat != null ? c('dim', `  https://www.google.com/maps?q=${p.lat},${p.lon}`) : null,
     '',
   ];
 
-  return lines.filter(l => l !== '').join('\n');
+  return lines.filter(l => l != null).join('\n');
 }
 
 export function formatPilotCompact(p) {
