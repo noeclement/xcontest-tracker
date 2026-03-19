@@ -40,6 +40,18 @@ function sparkline(values, width = 30) {
   return `${spark} ${c('dim', `${min}–${max} m`)}`;
 }
 
+/** Convert a bearing (degrees) to a Unicode arrow pointing that direction. */
+function bearingArrow(deg) {
+  const arrows = ['↑', '↗', '→', '↘', '↓', '↙', '←', '↖'];
+  return arrows[Math.round(deg / 45) % 8];
+}
+
+/** Convert wind direction (degrees, "from") to an arrow showing where the wind blows. */
+function windArrow(deg) {
+  // Wind FROM 0° (north) blows south → rotate 180°
+  return bearingArrow((deg + 180) % 360);
+}
+
 /** Format altitude gain over 1 min with color and arrow. */
 function formatAltGain(meters) {
   if (meters == null) return '-';
@@ -60,7 +72,7 @@ export function formatPilot(p, { lowAlt = 150 } = {}) {
       : c('dim', 'UNKNOWN');
 
   const wind = p.wind
-    ? `${p.wind[0]}deg / ${(p.wind[1] * 3.6).toFixed(1)} km/h`
+    ? `${windArrow(p.wind[0])} ${(p.wind[1] * 3.6).toFixed(1)} km/h (${p.wind[0]}°)`
     : '-';
 
   const agl = p.alt != null && p.groundAlt != null ? p.alt - p.groundAlt : null;
@@ -87,6 +99,7 @@ export function formatPilot(p, { lowAlt = 150 } = {}) {
     `  Distance   ${p.routeDistance?.toFixed(1) ?? p.distance ?? '?'} km`,
     `  Avg speed  ${p.avgSpeed ?? '?'} km/h`,
     `  Wind       ${wind}`,
+    `  Heading    ${p.heading != null ? `${bearingArrow(p.heading)} (${Math.round(p.heading)}°)` : '-'}`,
     '',
     `  Last fix   ${c('dim', p.time ?? '?')}`,
     aglGraph,

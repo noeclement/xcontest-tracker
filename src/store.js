@@ -112,6 +112,25 @@ export class PilotStore {
     return (latest.alt - prev.alt) / dt;
   }
 
+  /** Compute heading (degrees) from the last two fixes. */
+  getHeading(uuid) {
+    const hist = this.history.get(uuid);
+    if (!hist || hist.length < 2) return null;
+
+    const prev = hist[hist.length - 2];
+    const latest = hist[hist.length - 1];
+
+    if (prev.lat == null || latest.lat == null) return null;
+    if (prev.lat === latest.lat && prev.lon === latest.lon) return null;
+
+    const toRad = d => d * Math.PI / 180;
+    const dLon = toRad(latest.lon - prev.lon);
+    const y = Math.sin(dLon) * Math.cos(toRad(latest.lat));
+    const x = Math.cos(toRad(prev.lat)) * Math.sin(toRad(latest.lat))
+            - Math.sin(toRad(prev.lat)) * Math.cos(toRad(latest.lat)) * Math.cos(dLon);
+    return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+  }
+
   /** Get AGL history for sparkline graph. */
   getAglHistory(uuid) {
     const hist = this.history.get(uuid);
@@ -154,6 +173,7 @@ export class PilotStore {
       wind: f?.addInfo?.windFromMs,
       altGain1m: this._altGain1m(f),
       vario: this.getVario(uuid),
+      heading: this.getHeading(uuid),
       aglHistory: this.getAglHistory(uuid),
       altHistory: this.getAltHistory(uuid),
     };
