@@ -18,6 +18,38 @@ const COLORS = {
 
 const c = (color, text) => `${COLORS[color]}${text}${COLORS.reset}`;
 
+/** Render a sparkline from an array of numbers. */
+function sparkline(values, width = 30) {
+  if (!values.length) return '';
+  const chars = ['▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 1;
+
+  // Resample to width if needed
+  let data = values;
+  if (values.length > width) {
+    data = [];
+    for (let i = 0; i < width; i++) {
+      const idx = Math.round(i * (values.length - 1) / (width - 1));
+      data.push(values[idx]);
+    }
+  }
+
+  const spark = data.map(v => chars[Math.min(7, Math.floor((v - min) / range * 7))]).join('');
+  return `${spark} ${c('dim', `${min}–${max} m`)}`;
+}
+
+/** Format altitude gain over 1 min with color and arrow. */
+function formatAltGain(meters) {
+  if (meters == null) return '-';
+  const arrow = meters >= 0 ? '↗' : '↘';
+  const str = `${arrow} ${Math.abs(meters)} m/min`;
+  if (meters >= 5) return c('green', str);
+  if (meters <= -5) return c('red', str);
+  return c('dim', str);
+}
+
 export function formatPilot(p) {
   if (!p) return '  Pilot not found.\n';
 
@@ -31,8 +63,12 @@ export function formatPilot(p) {
     ? `${p.wind[0]}deg / ${(p.wind[1] * 3.6).toFixed(1)} km/h`
     : '-';
 
-  const altAGL = p.alt != null && p.groundAlt != null
-    ? ` (${p.alt - p.groundAlt} m AGL)`
+  const agl = p.alt != null && p.groundAlt != null ? p.alt - p.groundAlt : null;
+  const aglStr = agl != null ? `${c('bold', `${agl} m`)} AGL` : '-';
+
+  const aglHist = p.aglHistory || [];
+  const aglGraph = aglHist.length >= 2
+    ? `\n  AGL graph  ${sparkline(aglHist)}`
     : '';
 
   const lines = [
@@ -40,40 +76,45 @@ export function formatPilot(p) {
     c('bold', `  ${p.name}`) + c('dim', ` @${p.username}`) + `  ${status}`,
     c('dim', `  ${p.glider || '?'}  |  Takeoff: ${p.takeoff || '?'} (${p.country || '?'})`),
     '',
-    `  Position   ${c('cyan', `${p.lat?.toFixed(5) ?? '?'}, ${p.lon?.toFixed(5) ?? '?'}`)}`,
-    `  Altitude   ${p.alt ?? '?'} m GPS${altAGL}`,
+    `  Height     ${aglStr}`,
+    `  Altitude   ${p.alt ?? '?'} m GPS  |  Ground: ${p.groundAlt ?? '?'} m`,
+    `  Climb/1m   ${formatAltGain(p.altGain1m)}`,
     `  Distance   ${p.routeDistance?.toFixed(1) ?? p.distance ?? '?'} km`,
     `  Avg speed  ${p.avgSpeed ?? '?'} km/h`,
     `  Wind       ${wind}`,
     `  Last fix   ${c('dim', p.time ?? '?')}`,
-    c('dim', `  https://www.google.com/maps?q=${p.lat},${p.lon}`),
+    aglGraph,
+    '',
+    p.lat != null ? c('dim', `  https://www.google.com/maps?q=${p.lat},${p.lon}`) : '',
     '',
   ];
 
-  return lines.join('\n');
+  return lines.filter(l => l !== '').join('\n');
 }
 
 export function formatPilotCompact(p) {
   if (!p) return '';
   const status = p.landed === false ? c('green', 'FLY') : c('red', 'LND');
   const dist = (p.distance ?? 0).toFixed(1).padStart(6);
-  const alt = String(p.alt ?? 0).padStart(5);
-  return `  ${status}  ${c('bold', p.name?.padEnd(25) || '?')} ${alt} m  ${dist} km  ${c('dim', p.glider || '')}`;
+  const agl = p.alt != null && p.groundAlt != null ? p.alt - p.groundAlt : 0;
+  const alt = String(agl).padStart(5);
+  const climb = p.altGain1m != null ? formatAltGain(p.altGain1m) : '';
+  return `  ${status}  ${c('bold', p.name?.padEnd(25) || '?')} ${alt} m  ${dist} km  ${climb}  ${c('dim', p.glider || '')}`;
 }
 
 export function printHeader(query, count) {
   const now = new Date().toLocaleTimeString('en-US', { hour12: false });
   console.clear();
-  console.log(c('bgBlue', c('white', `  XCONTEST LIVE TRACKER  `)));
+  console.log(c('bgBlue', c('white', `  XCONTEST LIVE TRACKER  `)) + c('dim', `  https://live.xcontest.org`));
   console.log(c('dim', `  ${now}  |  ${count} pilots online`));
   if (query) console.log(c('dim', `  Tracking: "${query}"`));
   console.log();
 }
 
 export function printList(pilots, maxCount = 30) {
-  const header = `  ${'STAT'.padEnd(5)} ${'PILOT'.padEnd(25)} ${'ALT'.padStart(5)}    ${'DIST'.padStart(6)}    GLIDER`;
+  const header = `  ${'STAT'.padEnd(5)} ${'PILOT'.padEnd(25)} ${'AGL'.padStart(5)}    ${'DIST'.padStart(6)}    CLIMB        GLIDER`;
   console.log(c('dim', header));
-  console.log(c('dim', '  ' + '-'.repeat(78)));
+  console.log(c('dim', '  ' + '-'.repeat(85)));
   for (const p of pilots.slice(0, maxCount)) {
     console.log(formatPilotCompact(p));
   }

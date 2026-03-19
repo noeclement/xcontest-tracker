@@ -18,7 +18,7 @@ function printUsage() {
     xct "Maxime Pinot"
     xct "MaxP"
     xct --list
-    xct --search "Pinot" --interval 15
+    xct --search "Pinot"
   `);
 }
 

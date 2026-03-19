@@ -62,7 +62,7 @@ Displays results and exits.
 For each tracked pilot:
 
 - **Status**: flying / landed
-- **GPS position** (lat, lon) with Google Maps link
+- **GPS position** (lat, lon) with Google Maps link and XContest Live link
 - **Altitude** (GPS + AGL)
 - **Distance** flown (km)
 - **Average speed** (km/h)
