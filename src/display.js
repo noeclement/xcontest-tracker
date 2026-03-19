@@ -90,7 +90,7 @@ export function notify(title, body) {
   const b = body.replace(/'/g, "'\\''");
 
   if (platform === 'darwin') {
-    exec(`osascript -e 'display notification "${b}" with title "${t}" sound name "Glass"'`);
+    exec(`osascript -e 'display notification \"${b}\" with title \"${t}\" sound name \"Glass\"'`);
   } else if (platform === 'win32') {
     const ps = `
       [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null;
