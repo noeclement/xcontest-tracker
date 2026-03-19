@@ -35,9 +35,11 @@ Change refresh interval (default 30s):
 xct "MaxP" --interval 10
 ```
 
-The tracker keeps running even if the pilot isn't live yet — it will **play a sound** when:
+The tracker keeps running even if the pilot isn't live yet — you'll get a **native OS notification with sound** when:
 - The pilot appears in live tracking
 - The pilot takes off (status changes from landed to flying)
+
+Works on macOS (Notification Center), Windows (Toast notifications), and Linux (`notify-send`).
 
 ### List flying pilots
 
