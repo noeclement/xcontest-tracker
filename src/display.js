@@ -70,11 +70,6 @@ export function formatPilot(p) {
     ? `  AGL        ${sparkline(aglHist)}`
     : '';
 
-  const vario = p.vario;
-  const varioStr = vario != null
-    ? (vario >= 0 ? c('green', `+${vario.toFixed(1)} m/s`) : c('red', `${vario.toFixed(1)} m/s`))
-    : '-';
-
   const lines = [
     c('dim', '  ─────────────────────────────────────────────'),
     '',
@@ -82,7 +77,7 @@ export function formatPilot(p) {
     c('dim', `  ${p.glider || '?'}  |  Takeoff: ${p.takeoff || '?'} (${p.country || '?'})`),
     '',
     `  ${c('bold', `${agl ?? '?'} m AGL`)}  ${c('dim', `(${p.alt ?? '?'} m GPS / gnd ${p.groundAlt ?? '?'} m)`)}`,
-    `  Climb/1m   ${formatAltGain(p.altGain1m)}  |  Vario ${varioStr}`,
+    `  Vario      ${formatAltGain(p.altGain1m)}`,
     '',
     `  Distance   ${p.routeDistance?.toFixed(1) ?? p.distance ?? '?'} km`,
     `  Avg speed  ${p.avgSpeed ?? '?'} km/h`,
