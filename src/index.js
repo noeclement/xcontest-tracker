@@ -11,6 +11,7 @@ function printUsage() {
   Usage:
     xct "Pilot name or username"       Track a pilot (refreshes every 30s)
     xct "Pilot" --interval 10          Change refresh interval (seconds)
+    xct "Pilot" --low-alt 200         Set low point alert threshold (default: 150m AGL)
     xct --list                         List flying pilots
     xct --search "text"                Search for a pilot
 
@@ -33,8 +34,11 @@ const listMode = args.includes('--list');
 const searchIdx = args.indexOf('--search');
 const intervalIdx = args.indexOf('--interval');
 
+const lowAltIdx = args.indexOf('--low-alt');
+
 const searchQuery = searchIdx !== -1 ? args[searchIdx + 1] : null;
 const interval = intervalIdx !== -1 ? parseInt(args[intervalIdx + 1]) : 30;
+const lowAltThreshold = lowAltIdx !== -1 ? parseInt(args[lowAltIdx + 1]) : null;
 
 // In track mode, the first non-flag argument is the pilot name
 let trackQuery = null;
@@ -52,6 +56,36 @@ let gotStatics = false;
 // Track previous state for notifications
 let prevFound = false;
 let prevFlying = false;
+
+// ─── Low point detector (Schmitt trigger / hysteresis) ──────────────────────
+
+const LOW_AGL = lowAltThreshold || 150;  // alert threshold (m)
+const SAFE_AGL = LOW_AGL * 2;           // reset threshold (m)
+const MIN_DISTANCE = 3;    // ignore during takeoff/extraction (km)
+
+// State per pilot username: 'safe' | 'low'
+const lowPointState = new Map();
+
+function checkLowPoint(p) {
+  if (!p || p.landed !== false) return;
+
+  const agl = p.alt != null && p.groundAlt != null ? p.alt - p.groundAlt : null;
+  if (agl == null) return;
+
+  // Skip takeoff/extraction phase
+  if ((p.distance ?? 0) < MIN_DISTANCE) return;
+
+  const key = p.username || p.uuid;
+  const state = lowPointState.get(key) || 'safe';
+
+  if (state === 'safe' && agl < LOW_AGL) {
+    lowPointState.set(key, 'low');
+    notify('Low Point!', `${p.name} is at ${agl} m AGL!`);
+    console.log(`  *** LOW POINT: ${p.name} at ${agl} m AGL! ***\n`);
+  } else if (state === 'low' && agl >= SAFE_AGL) {
+    lowPointState.set(key, 'safe');
+  }
+}
 
 function checkReady() {
   if (!ready && gotFlights && gotStatics) {
@@ -149,6 +183,7 @@ function doTrack(query) {
   }
 
   for (const p of results) {
+    checkLowPoint(p);
     console.log(formatPilot(p));
   }
 
