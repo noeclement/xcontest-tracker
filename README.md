@@ -4,6 +4,8 @@ Real-time paragliding pilot tracking via [XContest Live](https://live.xcontest.o
 
 Connects to XContest's WebSocket, fetches all live pilot positions, and displays the pilot you're following with automatic refresh and sound notifications.
 
+![XContest Live Tracker screenshot](screenshot.png)
+
 ## Installation
 
 ```bash
@@ -86,7 +88,8 @@ For each tracked pilot:
 - **AGL sparkline** — altitude graph that builds up over the tracking session
 - **Distance** flown (km)
 - **Average speed** (km/h)
-- **Wind** (direction + speed)
+- **Wind** direction arrow + speed
+- **Heading** — pilot direction arrow (computed from last two fixes)
 - **Glider**, takeoff site, country
 - **Status**: flying / landed
 - **Google Maps link** for exact position
