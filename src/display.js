@@ -2,6 +2,8 @@
  * Terminal display and formatting functions.
  */
 
+import { exec } from 'node:child_process';
+
 const COLORS = {
   reset: '\x1b[0m',
   bold: '\x1b[1m',
@@ -81,7 +83,20 @@ export function printList(pilots, maxCount = 30) {
   console.log();
 }
 
-/** Play a system bell sound. */
+/** Play a notification sound (cross-platform). */
 export function beep() {
-  process.stdout.write('\x07');
+  const platform = process.platform;
+
+  if (platform === 'darwin') {
+    exec('afplay /System/Library/Sounds/Glass.aiff');
+  } else if (platform === 'win32') {
+    exec('[System.Media.SystemSounds]::Exclamation.Play()', { shell: 'powershell.exe' });
+  } else {
+    // Linux: try paplay (PulseAudio), then aplay (ALSA), then bell
+    exec(
+      'paplay /usr/share/sounds/freedesktop/stereo/complete.oga 2>/dev/null || ' +
+      'aplay /usr/share/sounds/freedesktop/stereo/complete.oga 2>/dev/null || ' +
+      'printf "\\a"'
+    );
+  }
 }
