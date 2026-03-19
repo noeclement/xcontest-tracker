@@ -1,29 +1,29 @@
 /**
- * Store en mémoire pour les données de vol et les infos pilotes.
+ * In-memory store for flight data and pilot info.
  */
 export class PilotStore {
   constructor() {
-    /** @type {Map<string, object>} Données de vol par UUID */
+    /** @type {Map<string, object>} Flight data by UUID */
     this.flights = new Map();
-    /** @type {Map<string, object>} Infos statiques par UUID */
+    /** @type {Map<string, object>} Static info by UUID */
     this.statics = new Map();
   }
 
-  /** Met à jour les données de vol. */
+  /** Update flight data. */
   updateFlights(info) {
     for (const [uuid, data] of Object.entries(info)) {
       this.flights.set(uuid, data);
     }
   }
 
-  /** Met à jour les infos statiques (pilote, voile, décollage...). */
+  /** Update static info (pilot, glider, takeoff...). */
   updateStatics(info) {
     for (const [uuid, data] of Object.entries(info)) {
       this.statics.set(uuid, data);
     }
   }
 
-  /** Recherche un pilote par nom ou username (recherche partielle, insensible à la casse). */
+  /** Search a pilot by name or username (partial, case-insensitive). */
   search(query) {
     const q = query.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     const results = [];
@@ -40,7 +40,7 @@ export class PilotStore {
     return results;
   }
 
-  /** Retourne un objet pilote combiné (statique + vol) pour un UUID. */
+  /** Return a combined pilot object (static + flight) for a UUID. */
   getPilot(uuid) {
     const s = this.statics.get(uuid);
     const f = this.flights.get(uuid);
@@ -69,7 +69,7 @@ export class PilotStore {
     };
   }
 
-  /** Liste tous les pilotes en vol (non posés). */
+  /** List all flying (not landed) pilots. */
   listFlying() {
     const flying = [];
     for (const [uuid] of this.statics) {
@@ -81,7 +81,7 @@ export class PilotStore {
     return flying.sort((a, b) => (b.distance || 0) - (a.distance || 0));
   }
 
-  /** Liste tous les pilotes connus. */
+  /** List all known pilots. */
   listAll() {
     const all = [];
     for (const [uuid] of this.statics) {

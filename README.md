@@ -1,8 +1,8 @@
 # XContest Live Tracker
 
-Suivi en temps réel de pilotes de parapente via [XContest Live](https://live.xcontest.org/), directement dans le terminal.
+Real-time paragliding pilot tracking via [XContest Live](https://live.xcontest.org/), right in your terminal.
 
-Se connecte au WebSocket de XContest, récupère la position de tous les pilotes en live, et affiche les infos du pilote que tu suis avec un refresh automatique.
+Connects to XContest's WebSocket, fetches all live pilot positions, and displays the pilot you're following with automatic refresh and sound notifications.
 
 ## Installation
 
@@ -13,58 +13,62 @@ npm install
 npm link
 ```
 
-> Requiert **Node.js 18+** (utilise `node:crypto` natif).
+> Requires **Node.js 18+** (uses native `node:crypto`).
 
-## Utilisation
+## Usage
 
-### Suivre un pilote
-
-```bash
-xct "ElieTSD"
-```
-
-Par nom complet :
+### Track a pilot
 
 ```bash
-xct "Elie Teyssedou"
+xct "MaxP"
 ```
 
-Changer l'intervalle de refresh (par défaut 30s) :
+By full name:
 
 ```bash
-xct "ElieTSD" --interval 10
+xct "Maxime Pinot"
 ```
 
-### Lister les pilotes en vol
+Change refresh interval (default 30s):
+
+```bash
+xct "MaxP" --interval 10
+```
+
+The tracker keeps running even if the pilot isn't live yet — it will **play a sound** when:
+- The pilot appears in live tracking
+- The pilot takes off (status changes from landed to flying)
+
+### List flying pilots
 
 ```bash
 xct --list
 ```
 
-Affiche un tableau trié par distance parcourue, actualisé toutes les 30s.
+Displays a table sorted by distance flown, refreshed every 30s.
 
-### Rechercher un pilote
+### Search for a pilot
 
 ```bash
-xct --search "Bottegal"
+xct --search "Pinot"
 ```
 
-Affiche les résultats et quitte.
+Displays results and exits.
 
-## Infos affichées
+## Displayed info
 
-Pour chaque pilote suivi :
+For each tracked pilot:
 
-- **Statut** : en vol / posé
-- **Position GPS** (lat, lon) avec lien Google Maps
-- **Altitude** GPS et hauteur sol
-- **Distance** parcourue (km)
-- **Vitesse moyenne** (km/h)
-- **Vent** (direction + force)
-- **Voile**, décollage, pays
-- **Timestamp** du dernier fix
+- **Status**: flying / landed
+- **GPS position** (lat, lon) with Google Maps link
+- **Altitude** (GPS + AGL)
+- **Distance** flown (km)
+- **Average speed** (km/h)
+- **Wind** (direction + speed)
+- **Glider**, takeoff site, country
+- **Last fix** timestamp
 
-## Fonctionnement
+## How it works
 
 ```
 ┌─────────────┐    WebSocket     ┌──────────────────┐
@@ -74,29 +78,29 @@ Pour chaque pilote suivi :
 └─────────────┘                 └──────────────────┘
 ```
 
-1. Connexion WebSocket à `wss://live2.xcontest.org/websock/webclient`
-2. Réponse au challenge cryptographique (HMAC-SHA256)
-3. Souscription au flux live (tous les pilotes)
-4. Réception des positions (`LiveFlightInfos`) et infos pilotes (`LiveStaticInfos`)
-5. Affichage et refresh à intervalle régulier
+1. WebSocket connection to `wss://live2.xcontest.org/websock/webclient`
+2. HMAC-SHA256 challenge-response handshake
+3. Subscribe to the live feed (all pilots)
+4. Receive positions (`LiveFlightInfos`) and pilot info (`LiveStaticInfos`)
+5. Display and refresh at regular intervals
 
-## Structure du projet
+## Project structure
 
 ```
 src/
-├── index.js     # Point d'entrée CLI, parsing des arguments
-├── client.js    # Client WebSocket XContest (handshake + protocol)
-├── store.js     # Store en mémoire (pilotes, vols, recherche)
-└── display.js   # Formatage et affichage terminal
+├── index.js     # CLI entry point, argument parsing, notifications
+├── client.js    # XContest WebSocket client (handshake + protocol)
+├── store.js     # In-memory store (pilots, flights, search)
+└── display.js   # Terminal formatting and display
 ```
 
-## Remarques
+## Notes
 
-- Aucune authentification XContest requise (données publiques du live tracking)
-- Reconnexion automatique en cas de déconnexion
-- La recherche est insensible à la casse et aux accents
-- Seuls les pilotes actuellement en live tracking apparaissent (vol du jour)
+- No XContest authentication required (public live tracking data)
+- Auto-reconnect on disconnection
+- Search is case-insensitive and accent-insensitive
+- Only pilots currently live tracking appear (today's flights)
 
-## Licence
+## License
 
 MIT

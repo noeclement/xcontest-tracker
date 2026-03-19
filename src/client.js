@@ -5,8 +5,8 @@ const WS_URL = 'wss://live2.xcontest.org/websock/webclient';
 const HMAC_KEY = 'bjIsOZnTlI5ktxO7uGTmJyfxBIonEtrwFPIaePVPPcAKj9YNlrm2TItjePlPySkD';
 
 /**
- * Client WebSocket pour l'API XContest Live Tracking.
- * Gère le handshake HMAC-SHA256, la souscription et la réception des données pilotes.
+ * WebSocket client for the XContest Live Tracking API.
+ * Handles the HMAC-SHA256 handshake, subscription, and pilot data reception.
  */
 export class XContestClient {
   constructor({ league = 'live', volume = 9999, onPilots, onStatic, onError, onConnect, onClose } = {}) {
@@ -24,7 +24,7 @@ export class XContestClient {
     this._knownUuids = new Set();
   }
 
-  /** Ouvre la connexion WebSocket. */
+  /** Open the WebSocket connection. */
   connect() {
     this._shouldReconnect = true;
     this._initMsg = true;
@@ -37,7 +37,7 @@ export class XContestClient {
     });
 
     this.ws.on('open', () => {
-      // Le serveur envoie le challenge en premier, on attend.
+      // Server sends the challenge first, we wait.
     });
 
     this.ws.on('message', (data) => {
@@ -50,7 +50,7 @@ export class XContestClient {
         const msg = JSON.parse(data.toString());
         this._dispatch(msg);
       } catch {
-        // Ignore les messages non-JSON
+        // Ignore non-JSON messages
       }
     });
 
@@ -66,7 +66,7 @@ export class XContestClient {
     });
   }
 
-  /** Ferme la connexion proprement. */
+  /** Close the connection cleanly. */
   close() {
     this._shouldReconnect = false;
     clearTimeout(this._reconnectTimer);
@@ -76,7 +76,7 @@ export class XContestClient {
     }
   }
 
-  /** Répond au challenge HMAC-SHA256 du serveur. */
+  /** Respond to the server's HMAC-SHA256 challenge. */
   _handleChallenge(data) {
     this._initMsg = false;
 
@@ -85,10 +85,9 @@ export class XContestClient {
     hmac.update(challengeBytes);
     const response = hmac.digest();
 
-    // Envoyer la réponse binaire
     this.ws.send(response);
 
-    // Envoyer les messages d'initialisation
+    // Send initialization messages
     this._send({ tag: 'WebFilterArea', area: null });
     this._send({ tag: 'WebFilterContest', contents: `${this.league}${this.volume}` });
     this._send({ tag: 'WebFollow', contents: [] });
@@ -96,12 +95,12 @@ export class XContestClient {
     this.onConnect();
   }
 
-  /** Dispatche les messages reçus du serveur. */
+  /** Dispatch incoming server messages. */
   _dispatch(msg) {
     switch (msg.tag) {
       case 'LiveFlightInfos':
         if (msg.info) {
-          // Demander les infos statiques pour les nouveaux UUIDs
+          // Request static info for new UUIDs
           const newUuids = Object.keys(msg.info).filter(u => !this._knownUuids.has(u));
           if (newUuids.length > 0) {
             newUuids.forEach(u => this._knownUuids.add(u));
@@ -116,14 +115,14 @@ export class XContestClient {
     }
   }
 
-  /** Envoie un message JSON au serveur. */
+  /** Send a JSON message to the server. */
   _send(obj) {
     if (this.ws?.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(obj));
     }
   }
 
-  /** Demande les infos détaillées pour une liste d'UUIDs. */
+  /** Request detailed info for a list of UUIDs. */
   requestInfo(uuids) {
     this._send({ tag: 'WebRequestInfo', contents: uuids });
   }

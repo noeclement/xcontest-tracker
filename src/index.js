@@ -2,23 +2,23 @@
 
 import { XContestClient } from './client.js';
 import { PilotStore } from './store.js';
-import { formatPilot, printHeader, printList } from './display.js';
+import { formatPilot, printHeader, printList, beep } from './display.js';
 
-// ─── Parsing des arguments ──────────────────────────────────────────────────
+// ─── Argument parsing ───────────────────────────────────────────────────────
 
 function printUsage() {
   console.log(`
   Usage:
-    npx xcontest-tracker "Nom du pilote"          Suivre un pilote (refresh toutes les 30s)
-    npx xcontest-tracker "Nom" --interval 10       Changer l'intervalle (en secondes)
-    npx xcontest-tracker --list                    Lister les pilotes en vol
-    npx xcontest-tracker --search "texte"          Rechercher un pilote
+    xct "Pilot name or username"       Track a pilot (refreshes every 30s)
+    xct "Pilot" --interval 10          Change refresh interval (seconds)
+    xct --list                         List flying pilots
+    xct --search "text"                Search for a pilot
 
-  Exemples:
-    node src/index.js "Elie Teyssedou"
-    node src/index.js --list
-    node src/index.js --search "Bottegal"
-    node src/index.js "Elie" --interval 15
+  Examples:
+    xct "Maxime Pinot"
+    xct "MaxP"
+    xct --list
+    xct --search "Pinot" --interval 15
   `);
 }
 
@@ -36,7 +36,7 @@ const intervalIdx = args.indexOf('--interval');
 const searchQuery = searchIdx !== -1 ? args[searchIdx + 1] : null;
 const interval = intervalIdx !== -1 ? parseInt(args[intervalIdx + 1]) : 30;
 
-// En mode track, le premier argument non-flag est le nom du pilote
+// In track mode, the first non-flag argument is the pilot name
 let trackQuery = null;
 if (!listMode && !searchQuery) {
   trackQuery = args.find(a => !a.startsWith('--'));
@@ -49,6 +49,10 @@ let ready = false;
 let gotFlights = false;
 let gotStatics = false;
 
+// Track previous state for notifications
+let prevFound = false;
+let prevFlying = false;
+
 function checkReady() {
   if (!ready && gotFlights && gotStatics) {
     ready = true;
@@ -58,7 +62,7 @@ function checkReady() {
 
 const client = new XContestClient({
   onConnect: () => {
-    console.log('  Connecté à XContest Live. Chargement des données...\n');
+    console.log('  Connected to XContest Live. Loading data...\n');
   },
   onPilots: (info) => {
     store.updateFlights(info);
@@ -71,10 +75,10 @@ const client = new XContestClient({
     checkReady();
   },
   onError: (err) => {
-    console.error(`  Erreur: ${err.message}`);
+    console.error(`  Error: ${err.message}`);
   },
   onClose: () => {
-    if (ready) console.log('  Déconnecté. Reconnexion...');
+    if (ready) console.log('  Disconnected. Reconnecting...');
   },
 });
 
@@ -83,7 +87,6 @@ const client = new XContestClient({
 function onReady() {
   if (listMode) {
     doList();
-    // Continue de mettre à jour
     setInterval(doList, interval * 1000);
   } else if (searchQuery) {
     doSearch(searchQuery);
@@ -98,7 +101,7 @@ function onReady() {
 function doList() {
   const flying = store.listFlying();
   printHeader(null, store.size);
-  console.log(`  ${flying.length} pilotes en vol:\n`);
+  console.log(`  ${flying.length} pilots flying:\n`);
   printList(flying, 50);
 }
 
@@ -106,9 +109,9 @@ function doSearch(query) {
   const results = store.search(query);
   printHeader(null, store.size);
   if (results.length === 0) {
-    console.log(`  Aucun pilote trouvé pour "${query}"\n`);
+    console.log(`  No pilot found for "${query}"\n`);
   } else {
-    console.log(`  ${results.length} résultat(s) pour "${query}":\n`);
+    console.log(`  ${results.length} result(s) for "${query}":\n`);
     for (const p of results) {
       console.log(formatPilot(p));
     }
@@ -119,9 +122,27 @@ function doTrack(query) {
   const results = store.search(query);
   printHeader(query, store.size);
 
+  const nowFound = results.length > 0;
+  const nowFlying = results.some(p => p.landed === false);
+
+  // Notify: pilot just appeared in live
+  if (nowFound && !prevFound) {
+    beep();
+    console.log(`  *** PILOT DETECTED: ${results[0].name} is now live! ***\n`);
+  }
+
+  // Notify: pilot just took off (was landed, now flying)
+  if (nowFlying && !prevFlying && prevFound) {
+    beep();
+    console.log(`  *** TAKEOFF: ${results.find(p => !p.landed)?.name} is in the air! ***\n`);
+  }
+
+  prevFound = nowFound;
+  prevFlying = nowFlying;
+
   if (results.length === 0) {
-    console.log(`  Aucun pilote trouvé pour "${query}".`);
-    console.log(`  Le pilote n'est peut-être pas en live actuellement.\n`);
+    console.log(`  No pilot found for "${query}".`);
+    console.log(`  Waiting for pilot to appear... (checking every ${interval}s)\n`);
     return;
   }
 
@@ -129,7 +150,7 @@ function doTrack(query) {
     console.log(formatPilot(p));
   }
 
-  console.log(`  Prochaine mise à jour dans ${interval}s (Ctrl+C pour quitter)\n`);
+  console.log(`  Next update in ${interval}s (Ctrl+C to quit)\n`);
 }
 
 // ─── Go ─────────────────────────────────────────────────────────────────────
