@@ -98,7 +98,7 @@ const lastMilestone = new Map();
 function checkDistanceMilestone(p) {
   if (!notifyKmStep || !p || p.landed !== false) return;
 
-  const dist = p.distance ?? 0;
+  const dist = p.routeDistance ?? p.distance ?? 0;
   if (dist < notifyKmStep) return;
 
   const key = p.username || p.uuid;

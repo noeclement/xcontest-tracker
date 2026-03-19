@@ -150,7 +150,7 @@ export class PilotStore {
       landed: f?.landed ?? null,
       distance: f?.absDistance,
       routeDistance: f?.contest?.live9999?.route?.distance,
-      avgSpeed: f?.contest?.live9999?.route?.avgSpeed,
+      avgSpeed: f?.contest?.live9999?.avgSpeed,
       wind: f?.addInfo?.windFromMs,
       altGain1m: this._altGain1m(f),
       vario: this.getVario(uuid),
