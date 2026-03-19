@@ -83,16 +83,26 @@ export function printList(pilots, maxCount = 30) {
   console.log();
 }
 
-/** Play a notification sound (cross-platform). */
-export function beep() {
+/** Send an OS notification + sound (cross-platform, no dependencies). */
+export function notify(title, body) {
   const platform = process.platform;
+  const t = title.replace(/'/g, "'\\''");
+  const b = body.replace(/'/g, "'\\''");
 
   if (platform === 'darwin') {
-    exec('afplay /System/Library/Sounds/Glass.aiff');
+    exec(`osascript -e 'display notification "${b}" with title "${t}" sound name "Glass"'`);
   } else if (platform === 'win32') {
-    exec('[System.Media.SystemSounds]::Exclamation.Play()', { shell: 'powershell.exe' });
+    const ps = `
+      [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null;
+      $t = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent(0);
+      $t.GetElementsByTagName('text')[0].AppendChild($t.CreateTextNode('${t}: ${b}')) | Out-Null;
+      [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('XContest Tracker').Show([Windows.UI.Notifications.ToastNotification]::new($t));
+      [System.Media.SystemSounds]::Exclamation.Play()
+    `.replace(/\n\s*/g, ' ');
+    exec(ps, { shell: 'powershell.exe' });
   } else {
-    // Linux: try paplay (PulseAudio), then aplay (ALSA), then bell
+    // Linux: notify-send + sound
+    exec(`notify-send '${t}' '${b}' 2>/dev/null`);
     exec(
       'paplay /usr/share/sounds/freedesktop/stereo/complete.oga 2>/dev/null || ' +
       'aplay /usr/share/sounds/freedesktop/stereo/complete.oga 2>/dev/null || ' +

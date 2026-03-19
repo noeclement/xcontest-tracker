@@ -2,7 +2,7 @@
 
 import { XContestClient } from './client.js';
 import { PilotStore } from './store.js';
-import { formatPilot, printHeader, printList, beep } from './display.js';
+import { formatPilot, printHeader, printList, notify } from './display.js';
 
 // ─── Argument parsing ───────────────────────────────────────────────────────
 
@@ -127,14 +127,16 @@ function doTrack(query) {
 
   // Notify: pilot just appeared in live
   if (nowFound && !prevFound) {
-    beep();
-    console.log(`  *** PILOT DETECTED: ${results[0].name} is now live! ***\n`);
+    const name = results[0].name;
+    notify('Pilot Detected', `${name} is now live!`);
+    console.log(`  *** PILOT DETECTED: ${name} is now live! ***\n`);
   }
 
   // Notify: pilot just took off (was landed, now flying)
   if (nowFlying && !prevFlying && prevFound) {
-    beep();
-    console.log(`  *** TAKEOFF: ${results.find(p => !p.landed)?.name} is in the air! ***\n`);
+    const name = results.find(p => !p.landed)?.name;
+    notify('Takeoff!', `${name} is in the air!`);
+    console.log(`  *** TAKEOFF: ${name} is in the air! ***\n`);
   }
 
   prevFound = nowFound;
