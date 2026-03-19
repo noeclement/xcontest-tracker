@@ -12,6 +12,7 @@ function printUsage() {
     xct "Pilot name or username"       Track a pilot (refreshes every 10s)
     xct "Pilot" --interval 10          Change refresh interval (seconds)
     xct "Pilot" --low-alt 200         Set low point alert threshold (default: 150m AGL)
+    xct "Pilot" --notify-km 50        Notify every 50 km flown (default: off)
     xct --list                         List flying pilots
     xct --search "text"                Search for a pilot
 
@@ -35,10 +36,12 @@ const searchIdx = args.indexOf('--search');
 const intervalIdx = args.indexOf('--interval');
 
 const lowAltIdx = args.indexOf('--low-alt');
+const notifyKmIdx = args.indexOf('--notify-km');
 
 const searchQuery = searchIdx !== -1 ? args[searchIdx + 1] : null;
 const interval = intervalIdx !== -1 ? parseInt(args[intervalIdx + 1]) : 10;
 const lowAltThreshold = lowAltIdx !== -1 ? parseInt(args[lowAltIdx + 1]) : null;
+const notifyKmStep = notifyKmIdx !== -1 ? parseInt(args[notifyKmIdx + 1]) : null;
 
 // In track mode, the first non-flag argument is the pilot name
 let trackQuery = null;
@@ -85,6 +88,32 @@ function checkLowPoint(p) {
   } else if (state === 'low' && agl >= SAFE_AGL) {
     lowPointState.set(key, 'safe');
   }
+}
+
+// ─── Distance milestone detector ────────────────────────────────────────────
+
+// Tracks last milestone reached per pilot username
+const lastMilestone = new Map();
+
+function checkDistanceMilestone(p) {
+  if (!notifyKmStep || !p || p.landed !== false) return;
+
+  const dist = p.distance ?? 0;
+  if (dist < notifyKmStep) return;
+
+  const key = p.username || p.uuid;
+  const currentMilestone = Math.floor(dist / notifyKmStep) * notifyKmStep;
+  const prev = lastMilestone.get(key) || 0;
+
+  if (currentMilestone > prev) {
+    lastMilestone.set(key, currentMilestone);
+    // Skip notification on first detection (avoid spam on startup)
+    if (lastMilestone.has(key + ':init')) {
+      notify(`${currentMilestone} km!`, `${p.name} passed ${currentMilestone} km!`);
+      console.log(`  *** ${p.name} passed ${currentMilestone} km! ***\n`);
+    }
+  }
+  lastMilestone.set(key + ':init', true);
 }
 
 function checkReady() {
@@ -184,6 +213,7 @@ function doTrack(query) {
 
   for (const p of results) {
     checkLowPoint(p);
+    checkDistanceMilestone(p);
     console.log(formatPilot(p, { lowAlt: LOW_AGL }));
   }
 

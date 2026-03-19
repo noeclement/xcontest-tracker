@@ -41,6 +41,12 @@ Set a custom low point alert threshold (default 150m AGL):
 xct "MaxP" --low-alt 200
 ```
 
+Get notified at every distance milestone:
+
+```bash
+xct "MaxP" --notify-km 50
+```
+
 ### Alerts
 
 The tracker keeps running even if the pilot isn't live yet — you'll get a **native OS notification with sound** when:
@@ -48,6 +54,7 @@ The tracker keeps running even if the pilot isn't live yet — you'll get a **na
 - The pilot **appears** in live tracking
 - The pilot **takes off** (status changes from landed to flying)
 - The pilot **drops below the AGL threshold** (low point alert)
+- The pilot **passes a distance milestone** (e.g. 50 km, 100 km, 150 km...)
 
 The low point detector uses hysteresis to avoid spam: once triggered, it won't fire again until the pilot climbs back above 2x the threshold. It also ignores the takeoff/extraction phase (distance < 3 km).
 
