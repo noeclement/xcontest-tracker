@@ -60,7 +60,27 @@ export class PilotStore {
       }
     }
 
-    return results;
+    return this._dedup(results);
+  }
+
+  /** If the same pilot has multiple flights, keep only the active one. */
+  _dedup(results) {
+    const byUser = new Map();
+    for (const p of results) {
+      const key = p.username?.toLowerCase() || p.uuid;
+      const existing = byUser.get(key);
+      if (!existing) {
+        byUser.set(key, p);
+      } else {
+        // Prefer flying over landed, then most recent fix
+        if (p.landed === false && existing.landed !== false) {
+          byUser.set(key, p);
+        } else if (p.landed === existing.landed && p.time > (existing.time || '')) {
+          byUser.set(key, p);
+        }
+      }
+    }
+    return [...byUser.values()];
   }
 
   /** Altitude gain/loss over ~1 min (lastFix vs lastScorePoint). */

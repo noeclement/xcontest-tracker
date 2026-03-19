@@ -72,6 +72,7 @@ export function formatPilot(p) {
     : '';
 
   const lines = [
+    c('dim', '  ─────────────────────────────────────────────'),
     '',
     c('bold', `  ${p.name}`) + c('dim', ` @${p.username}`) + `  ${status}`,
     c('dim', `  ${p.glider || '?'}  |  Takeoff: ${p.takeoff || '?'} (${p.country || '?'})`),
@@ -79,12 +80,13 @@ export function formatPilot(p) {
     `  Height     ${aglStr}`,
     `  Altitude   ${p.alt ?? '?'} m GPS  |  Ground: ${p.groundAlt ?? '?'} m`,
     `  Climb/1m   ${formatAltGain(p.altGain1m)}`,
+    '',
     `  Distance   ${p.routeDistance?.toFixed(1) ?? p.distance ?? '?'} km`,
     `  Avg speed  ${p.avgSpeed ?? '?'} km/h`,
     `  Wind       ${wind}`,
+    '',
     `  Last fix   ${c('dim', p.time ?? '?')}`,
     aglGraph,
-    '',
     p.lat != null ? c('dim', `  https://www.google.com/maps?q=${p.lat},${p.lon}`) : '',
     '',
   ];
