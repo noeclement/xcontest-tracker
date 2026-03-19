@@ -14,6 +14,7 @@ const COLORS = {
   cyan: '\x1b[36m',
   white: '\x1b[37m',
   bgBlue: '\x1b[44m',
+  bgRed: '\x1b[41m',
 };
 
 const c = (color, text) => `${COLORS[color]}${text}${COLORS.reset}`;
@@ -85,8 +86,13 @@ export function formatPilot(p, { lowAlt = 150 } = {}) {
     ? `  AGL graph  ${sparkline(aglHist)}`
     : null;
 
+  const dangerBar = isLow
+    ? c('red', '  !! LOW POINT !!')
+    : null;
+
   const lines = [
     c('dim', '  ─────────────────────────────────────────────'),
+    dangerBar,
     '',
     c('bold', `  ${p.name}`) + c('dim', ` @${p.username}`) + `  ${status}`,
     c('dim', `  ${p.glider || '?'}  |  Takeoff: ${p.takeoff || '?'} (${p.country || '?'})`),
