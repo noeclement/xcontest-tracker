@@ -9,7 +9,7 @@ import { formatPilot, printHeader, printList, notify } from './display.js';
 function printUsage() {
   console.log(`
   Usage:
-    xct "Pilot name or username"       Track a pilot (refreshes every 30s)
+    xct "Pilot name or username"       Track a pilot (refreshes every 10s)
     xct "Pilot" --interval 10          Change refresh interval (seconds)
     xct "Pilot" --low-alt 200         Set low point alert threshold (default: 150m AGL)
     xct --list                         List flying pilots
@@ -37,7 +37,7 @@ const intervalIdx = args.indexOf('--interval');
 const lowAltIdx = args.indexOf('--low-alt');
 
 const searchQuery = searchIdx !== -1 ? args[searchIdx + 1] : null;
-const interval = intervalIdx !== -1 ? parseInt(args[intervalIdx + 1]) : 30;
+const interval = intervalIdx !== -1 ? parseInt(args[intervalIdx + 1]) : 10;
 const lowAltThreshold = lowAltIdx !== -1 ? parseInt(args[lowAltIdx + 1]) : null;
 
 // In track mode, the first non-flag argument is the pilot name

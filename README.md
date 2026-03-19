@@ -29,7 +29,7 @@ By full name:
 xct "Maxime Pinot"
 ```
 
-Change refresh interval (default 30s):
+Change refresh interval (default 10s):
 
 ```bash
 xct "MaxP" --interval 10
@@ -59,7 +59,7 @@ Works on macOS (Notification Center), Windows (Toast notifications), and Linux (
 xct --list
 ```
 
-Displays a table sorted by distance flown, refreshed every 30s.
+Displays a table sorted by distance flown, refreshed every 10s.
 
 ### Search for a pilot
 

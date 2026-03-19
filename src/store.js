@@ -2,7 +2,7 @@
  * In-memory store for flight data and pilot info.
  */
 
-const MAX_HISTORY = 60; // keep last 60 fixes (~30 min at 30s interval)
+const MAX_HISTORY = 180; // keep last 180 fixes (~30 min at 10s interval)
 
 export class PilotStore {
   constructor() {
