@@ -64,7 +64,6 @@ export function formatPilot(p) {
     : '-';
 
   const agl = p.alt != null && p.groundAlt != null ? p.alt - p.groundAlt : null;
-  const aglStr = agl != null ? `${c('bold', `${agl} m`)} AGL` : '-';
 
   const aglHist = p.aglHistory || [];
   const aglGraph = aglHist.length >= 2
@@ -77,8 +76,7 @@ export function formatPilot(p) {
     c('bold', `  ${p.name}`) + c('dim', ` @${p.username}`) + `  ${status}`,
     c('dim', `  ${p.glider || '?'}  |  Takeoff: ${p.takeoff || '?'} (${p.country || '?'})`),
     '',
-    `  Height     ${aglStr}`,
-    `  Altitude   ${p.alt ?? '?'} m GPS  |  Ground: ${p.groundAlt ?? '?'} m`,
+    `  ${c('bold', `${agl ?? '?'} m AGL`)}  ${c('dim', `(${p.alt ?? '?'} m GPS / gnd ${p.groundAlt ?? '?'} m)`)}`,
     `  Climb/1m   ${formatAltGain(p.altGain1m)}`,
     '',
     `  Distance   ${p.routeDistance?.toFixed(1) ?? p.distance ?? '?'} km`,

@@ -152,7 +152,7 @@ function doTrack(query) {
     console.log(formatPilot(p));
   }
 
-  console.log(`  Next update in ${interval}s (Ctrl+C to quit)\n`);
+  console.log(`\n  Next update in ${interval}s (Ctrl+C to quit)\n`);
 }
 
 // ─── Go ─────────────────────────────────────────────────────────────────────
