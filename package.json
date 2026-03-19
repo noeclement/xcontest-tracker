@@ -1,0 +1,16 @@
+{
+  "name": "xcontest-tracker",
+  "version": "1.0.0",
+  "description": "Suivi en temps réel de pilotes de parapente via XContest Live",
+  "type": "module",
+  "scripts": {
+    "track": "node src/index.js",
+    "list": "node src/index.js --list",
+    "search": "node src/index.js --search"
+  },
+  "keywords": ["xcontest", "paragliding", "live-tracking", "parapente"],
+  "license": "MIT",
+  "dependencies": {
+    "ws": "^8.19.0"
+  }
+}
