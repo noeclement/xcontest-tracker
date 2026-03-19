@@ -50,7 +50,7 @@ function formatAltGain(meters) {
   return c('dim', str);
 }
 
-export function formatPilot(p) {
+export function formatPilot(p, { lowAlt = 150 } = {}) {
   if (!p) return '  Pilot not found.\n';
 
   const status = p.landed === false
@@ -64,6 +64,9 @@ export function formatPilot(p) {
     : '-';
 
   const agl = p.alt != null && p.groundAlt != null ? p.alt - p.groundAlt : null;
+  const isLow = agl != null && agl < lowAlt && p.landed === false && (p.distance ?? 0) >= 3;
+  const aglColor = isLow ? 'red' : 'bold';
+  const aglLabel = `${agl ?? '?'} m AGL` + (isLow ? ' !!!' : '');
 
   const aglHist = p.aglHistory || [];
   const aglGraph = aglHist.length >= 2
@@ -76,7 +79,8 @@ export function formatPilot(p) {
     c('bold', `  ${p.name}`) + c('dim', ` @${p.username}`) + `  ${status}`,
     c('dim', `  ${p.glider || '?'}  |  Takeoff: ${p.takeoff || '?'} (${p.country || '?'})`),
     '',
-    `  ${c('bold', `${agl ?? '?'} m AGL`)}  ${c('dim', `(${p.alt ?? '?'} m GPS / gnd ${p.groundAlt ?? '?'} m)`)}`,
+    `  ${c(aglColor, aglLabel)}  ${c('dim', `(${p.alt ?? '?'} m GPS / gnd ${p.groundAlt ?? '?'} m)`)}`,
+    '',
     `  Climb/1m   ${formatAltGain(p.altGain1m)}`,
     `  Vario      ${p.vario != null ? (p.vario >= 0.5 ? c('green', `+${p.vario.toFixed(1)} m/s`) : p.vario <= -0.5 ? c('red', `${p.vario.toFixed(1)} m/s`) : c('dim', `${p.vario >= 0 ? '+' : ''}${p.vario.toFixed(1)} m/s`)) : '-'}`,
     '',
@@ -86,6 +90,7 @@ export function formatPilot(p) {
     '',
     `  Last fix   ${c('dim', p.time ?? '?')}`,
     aglGraph,
+    '',
     p.lat != null ? c('dim', `  https://www.google.com/maps?q=${p.lat},${p.lon}`) : '',
     '',
   ];

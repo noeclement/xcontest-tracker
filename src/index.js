@@ -147,7 +147,7 @@ function doSearch(query) {
   } else {
     console.log(`  ${results.length} result(s) for "${query}":\n`);
     for (const p of results) {
-      console.log(formatPilot(p));
+      console.log(formatPilot(p, { lowAlt: LOW_AGL }));
     }
   }
 }
@@ -184,7 +184,7 @@ function doTrack(query) {
 
   for (const p of results) {
     checkLowPoint(p);
-    console.log(formatPilot(p));
+    console.log(formatPilot(p, { lowAlt: LOW_AGL }));
   }
 
   console.log(`\n  Next update in ${interval}s (Ctrl+C to quit)\n`);
