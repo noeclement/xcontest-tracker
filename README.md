@@ -35,9 +35,21 @@ Change refresh interval (default 30s):
 xct "MaxP" --interval 10
 ```
 
+Set a custom low point alert threshold (default 150m AGL):
+
+```bash
+xct "MaxP" --low-alt 200
+```
+
+### Alerts
+
 The tracker keeps running even if the pilot isn't live yet — you'll get a **native OS notification with sound** when:
-- The pilot appears in live tracking
-- The pilot takes off (status changes from landed to flying)
+
+- The pilot **appears** in live tracking
+- The pilot **takes off** (status changes from landed to flying)
+- The pilot **drops below the AGL threshold** (low point alert)
+
+The low point detector uses hysteresis to avoid spam: once triggered, it won't fire again until the pilot climbs back above 2x the threshold. It also ignores the takeoff/extraction phase (distance < 3 km).
 
 Works on macOS (Notification Center), Windows (Toast notifications), and Linux (`notify-send`).
 
